@@ -15,6 +15,9 @@ app.get('/index', (req, res) => {
     socket.on('send figure', (msg) => {
       io.emit('share figure', msg);
     });
+    socket.on('send Line', (msg) => {
+        io.emit('share Line', msg);
+      });
   });
 http.listen(port, () => {
   console.log('listening on *:3000');

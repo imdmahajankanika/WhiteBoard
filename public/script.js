@@ -20,7 +20,6 @@ addEventListener('load', () => {
 addEventListener('resize', () => {
     canvas.width = document.getElementById("drawingbox").clientWidth;
     canvas.height = document.getElementById("drawingbox").clientHeight;
-    reLoadFigs()
 })
 
 function registerUser(){
@@ -34,36 +33,17 @@ function registerUser(){
         if(display_btn.disabled == true){ display_btn.disabled = false}
         username = input.value
         user_message.innerHTML = `You are now logged in as : <b>${username}</b>`
-        reLoadFigs()
+        
     }
     else{
         if(display_btn.disabled == false){ display_btn.disabled = true }
         username = input.value
         user_message.innerHTML = `username didn't match length criteria! Please register with username length >= 6`
-        reLoadFigs()
+        
     }
 }
 
 
-function reLoadFigs(){
-    getData().then((loadedFigure) => {
-        if(loadedFigure){
-          console.log(loadedFigure)
-            for(let i = 0; i < loadedFigure.length; i++){
-              
-                if(loadedFigure[i].shape == 'Triangle'){
-                    drawTriangle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
-                }
-                else if(loadedFigure[i].shape == 'Square'){
-                    drawSquare(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
-                }
-                else if(loadedFigure[i].shape == 'Circle'){
-                    drawCircle(loadedFigure[i].figSize, loadedFigure[i].borderSize, loadedFigure[i].start, loadedFigure[i].borderColor, loadedFigure[i].backgroundColor, false)
-                }
-            }        
-        }        
-    })
-}
 
 function display(){
     let shape = document.getElementById('shapes').value
@@ -162,10 +142,86 @@ function getStartingPoint(figSize, borderSize){
     return [x,y]
 }
 
+let isDrawing = false;
+let x=0;
+let y=0;
+
+
+function drawLine(x1, y1, x2, y2,pencil_col=document.getElementById('pencilCol').value,pencil_size=document.getElementById('pencil_size').value) {
+  // using a line between actual point and the last one solves the problem
+  // if you make very fast circles, you will see polygons.
+  // we could make arcs instead of lines to smooth the angles and solve the problem
+  ctx.beginPath();
+  ctx.strokeStyle = pencil_col;
+  ctx.lineWidth = pencil_size;
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.closePath();
+}
+
+function drawCircleAtCursor(x,y,canvas, event) {
+  // Problem with draw circle is the refresh rate of the mousevent.
+  // if you move too fast, circles are not connected.
+  // this is browser dependant, and can't be modified.
+    ctx.beginPath()
+    ctx.arc(x, y, 10/2, 0, Math.PI * 2)
+    ctx.closePath()
+
+    ctx.lineWidth = 2
+    ctx.strokeStyle = "#000"
+    ctx.stroke()
+    
+    ctx.fillStyle = "#000"
+    ctx.fill()
+}
+
+canvas.addEventListener('mousedown', function(e) {
+  if(username != ''){
+    const rect = canvas.getBoundingClientRect()
+    x = e.clientX - rect.left
+    y = e.clientY - rect.top
+    console.log("x: " + x + " y: " + y)
+    let Last_User = document.getElementById('Last_User')
+    Last_User.innerHTML = `Last user: <b>YOU</b>`
+    isDrawing=true
+  }
+  else{
+    let user_message = document.getElementById('user_message')
+    user_message.innerHTML = `Not registered! Please register to use canvas`
+  } 
+})
+
+canvas.addEventListener('mousemove', e => {
+  if (isDrawing === true) {
+    //drawCircleAtCursor(x,y,canvas, e)
+    drawLine(x, y, e.offsetX, e.offsetY);
+    let pencil_col=document.getElementById('pencilCol').value;
+    let pencil_size=document.getElementById('pencil_size').value;
+    sendLine({user: username, x: x, y: y, x2: e.offsetX, y2: e.offsetY, pencil_color: pencil_col, pencil_size: pencil_size})
+    x = e.offsetX;
+    y = e.offsetY;
+  }
+});
+
+window.addEventListener('mouseup', e => {
+  if (isDrawing === true) {
+    //drawCircleAtCursor(x,y,canvas, e)
+    drawLine(x, y, e.offsetX, e.offsetY);
+    x = 0;
+    y = 0;
+    isDrawing = false;
+  }
+});
+
+
 function sendData(data){
   socket.emit('send figure', data);
 }
 
+function sendLine(data){
+  socket.emit('send Line', data);
+}
 socket.on('share figure', (figure) => {
   if(figure.shape == 'Triangle'){
       drawTriangle(figure.figSize, figure.borderSize, figure.start, figure.borderColor, figure.backgroundColor, false)
@@ -178,89 +234,8 @@ socket.on('share figure', (figure) => {
   }
 })
 
-/*
-function sendData(data){
-    fetch('/send', 
-    {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify(data)
-    })
-}
-
-function getData(){
-    return new Promise((resolve, reject) => {
-        fetch('/get',
-        {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            method: 'POST',
-            body: JSON.stringify({user: username})
-        }).then(res => {
-            return res.json()
-        }).then(data => {
-            resolve(data)
-        }).catch(err => {
-            reject(err)
-        })     
-    })
-}*/
-/*function randomGen(){
-  var shp=["Square","Triangle","Circle"]
-  var col=["white","#347fc4","#7d6b91","#989fce","#E6C9F7"] ;
-  var col_bor=["#4b4a67","#5a2328","#264027","#821CC2","black"] ;
-  var thickness = [2,4,6,8,10,20];
-  var figSize = [20,40,60,80,100,200];
-  for(let i=0;i<10;i++){
-    var rnd_shp = shp[Math.floor(Math.random()*3)];
-    var rnd_bg = col[Math.floor(Math.random()*5)];
-    var rnd_bor = col_bor[Math.floor(Math.random()*5)];
-    var rnd_thickness=thickness[Math.floor(Math.random()*6)]
-    var rnd_figSize=figSize[Math.floor(Math.random()*6)]
-    var x = Math.floor(Math.random()*(canvas.width));
-    var y = Math.round(Math.random()*(canvas.height));
-    var ctx = canvas.getContext("2d");
-    if(rnd_shp=="Circle"){
-      var r= rnd_figSize/2;
-      ctx.beginPath();
-      ctx.arc(x,y,r,0,2*Math.PI);
-      ctx.fillStyle = rnd_bg;
-      ctx.fill();
-      ctx.lineWidth = rnd_thickness;
-      ctx.strokeStyle = rnd_bor;
-      ctx.stroke();
-    }
-    else if(rnd_shp=="Square"){
-      var width = rnd_figSize;
-      ctx.fillStyle = rnd_bg;
-      ctx.fillRect(x,y,width,width);
-      ctx.strokeStyle=rnd_bor;
-      ctx.lineWidth = rnd_thickness;
-      ctx.strokeRect(x,y,width,width);
-    }
-    else{
-        ctx.beginPath();
-        ctx.fillStyle = rnd_bg;
-        ctx.moveTo(x-rnd_figSize/2 ,y-rnd_figSize/2);
-        ctx.lineTo(x-rnd_figSize/2 , y+rnd_figSize/2);
-        ctx.lineTo(x + rnd_figSize/2, y + rnd_figSize/2);
-        ctx.closePath();
-        ctx.lineWidth = rnd_thickness;
-        ctx.fill();
-        ctx.strokeStyle=rnd_bor;
-        ctx.stroke();
-      }
-    //figs.push({"shape": rnd_shp, "bg_color": rnd_bg, "x": x, "y": y, "figure_size": rnd_figSize, "border_thickness": rnd_thickness, "border_col": rnd_bor});
-  //localStorage.setItem("figures", JSON.stringify(figs));
-   }
- }
- 
-function clearStorage(){
-    localStorage.setItem("figures", JSON.stringify([]));
-}
-*/
+socket.on('share Line', (line) => {
+  let Last_User = document.getElementById('Last_User')
+  Last_User.innerHTML = `Last user: <b>${line.user}</b>`
+  drawLine(line.x, line.y, line.x2, line.y2, line.pencil_color, line.pencil_size)
+})
