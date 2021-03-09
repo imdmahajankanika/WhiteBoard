@@ -232,6 +232,7 @@ socket.on('share figure', (figure) => {
   else if(figure.shape == 'Circle'){
       drawCircle(figure.figSize, figure.borderSize, figure.start, figure.borderColor, figure.backgroundColor, false)
   }
+  
 })
 
 socket.on('share Line', (line) => {
