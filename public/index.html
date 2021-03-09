@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="initial-scale=1.0, width=device-width">
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Canvas</title>
+</head>
+<body>
+<h1>Live Whiteboard</h1>
+<div class="userinfo">
+  <input type="text" id="username" placeholder="Enter username">
+  <button id="submit_username" onclick="registerUser()">Submit</button>
+</div>
+<div class="userinfo">
+  <br>
+  <span id="user_message">Not registered! Please register to use canvas<br>Should be more than 5 characters</span>
+</div>
+<div id="controlbar">
+  <div class="navbutton">
+    <label for="shapes">Choose a shape:</label>
+    <select name="shapes" id="shapes">
+    <option value="Square">Square</option>
+    <option value="Triangle">Triangle</option>
+    <option value="Circle">Circle</option>
+  </select>
+  </div>
+  <div class="navbutton">
+    <label for="bgcolor">BG Color</label>
+    <input type="color" name="bgcolor" id="bgcolor" value="#000000" list="five_col">
+    <datalist id="five_col">
+    <option value="#FF0000">Red</option>
+    <option value="#FFFF00">Yellow</option>
+    <option value="#008000">Green</option>
+    <option value="#0000FF">Blue</option>
+    <option value="#EE82EE">Violet</option>
+</datalist>
+  </div>
+  <div class="navbutton">
+    <label for="bordercolor">Border Color</label>
+    <input type="color" name="bordercolor" id="bordercolor" value="#000000" list="five_colors">
+    <datalist id="five_colors">
+    <option value="#FF0000">Red</option>
+    <option value="#FFFF00">Yellow</option>
+    <option value="#008000">Green</option>
+    <option value="#0000FF">Blue</option>
+    <option value="#EE82EE">Violet</option>
+</datalist>
+  </div>
+  <div class="navbutton">
+    <label for="borderThickness">Choose border thickness:</label>
+    <select name="borderThickness" id="borderThickness">
+    <option value="2">2 px</option>
+    <option value="4">4 px</option>
+    <option value="6">6 px</option>
+    <option value="8">8 px</option>
+    <option value="10">10 px</option>
+    <option value="20">20 px</option>
+  </select>
+  </div>
+  <div class="navbutton">
+    <label for="figureSize">Choose figure size:</label>
+    <select name="figureSize" id="figureSize">
+    <option value="20">20 px</option>
+    <option value="40">40 px</option>
+    <option value="60">60 px</option>
+    <option value="80">80 px</option>
+    <option value="100">100 px</option>
+    <option value="200">200 px</option>
+  </select>
+  </div>
+  <div class="navbutton">
+    <label for="display">Display Figure</label>
+    <button type="button" disabled id="display" onclick="display()">Display</button>
+  </div>
+  <!--<div class="navbutton">
+    <label for="random">Generate 10 Figures</label>
+    <button type="button" id="random" onclick="randomGen()">Click</button>
+  </div>-->
+<!--<div class="navbutton">
+    <label for="clear">Clear</label>
+    <button type="button" id="clear" onclick="clearStorage()">Clear</button>
+  </div>-->
+</div>
+<div id="drawingbox">
+ <canvas id="myCanvas"></canvas>
+</div>
+  
+ 
+  </body>
+
+<!-- partial -->
+<script src="../socket.io/socket.io.js"></script>
+  
+  <script  src="./script.js"></script>
+
+</html>
